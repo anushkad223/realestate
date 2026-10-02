@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIVASA — Real Estate Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#171B26;
+    --ink-2:#1F2537;
+    --ink-3:#272E45;
+    --paper:#EDE8DB;
+    --paper-2:#E3DCC9;
+    --brass:#C29A4B;
+    --brass-dim:#8E7134;
+    --sage:#4C7A67;
+    --rose:#B24B36;
+    --line:#333B54;
+    --line-paper:#CFC5A9;
+    --muted:#8891A6;
+    --muted-dark:#5B6478;
+    --text-on-paper:#20263A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ink);color:var(--paper);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Fraunces',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--brass);color:var(--ink);}
+
+  /* ===== NAV ===== */
+  .nav{
+    position:sticky;top:0;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;background:var(--ink);border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand-mark{font-size:22px;letter-spacing:0.08em;font-weight:600;}
+  .brand-tag{font-size:11px;color:var(--muted);letter-spacing:0.04em;}
+  .brand-dot{color:var(--brass);}
+  .tabs{display:flex;gap:4px;background:var(--ink-2);padding:4px;border-radius:999px;border:1px solid var(--line);}
+  .tab{padding:9px 20px;border-radius:999px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:500;letter-spacing:0.02em;transition:all .2s;}
+  .tab.active{background:var(--brass);color:var(--ink);}
+  .tab:not(.active):hover{color:var(--paper);}
+  .nav-right{display:flex;align-items:center;gap:16px;}
+  .fav-count{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;}
+  @media(max-width:720px){
+    .nav{padding:14px 16px;flex-wrap:wrap;gap:12px;}
+    .brand-tag{display:none;}
+  }
+
+  /* ===== HERO STRIP ===== */
+  .hero{
+    padding:40px 32px 28px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+  }
+  .hero h1{font-size:34px;font-weight:400;margin:0 0 6px;line-height:1.15;max-width:560px;}
+  .hero h1 em{font-style:italic;color:var(--brass);}
+  .hero p{color:var(--muted);margin:0;font-size:14px;max-width:440px;}
+  .hero-stats{display:flex;gap:28px;}
+  .hstat{text-align:right;}
+  .hstat .n{font-family:'IBM Plex Mono',monospace;font-size:22px;color:var(--brass);}
+  .hstat .l{font-size:11px;color:var(--muted);letter-spacing:0.04em;}
+
+  /* ===== LAYOUT ===== */
+  .layout{display:grid;grid-template-columns:250px 1fr;gap:0;max-width:1400px;margin:0 auto;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+
+  /* ===== FILTER RAIL ===== */
+  .rail{
+    padding:28px 24px;border-right:1px solid var(--line);align-self:start;position:sticky;top:73px;
+  }
+  .rail h3{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:600;margin:0 0 16px;font-family:'Inter',sans-serif;}
+  .field{margin-bottom:20px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px;letter-spacing:0.02em;}
+  .field input[type=text], .field select{
+    width:100%;padding:9px 11px;background:var(--ink-2);border:1px solid var(--line);color:var(--paper);
+    border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;
+  }
+  .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238891A6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{padding:6px 12px;border-radius:6px;background:var(--ink-2);border:1px solid var(--line);color:var(--muted);font-size:12px;transition:all .15s;}
+  .chip.active{background:var(--sage);border-color:var(--sage);color:#fff;}
+  .chip:hover:not(.active){border-color:var(--brass);color:var(--paper);}
+  .reset-link{background:none;border:none;color:var(--brass);font-size:12px;text-decoration:underline;padding:0;margin-top:4px;}
+
+  /* ===== GRID / CARDS ===== */
+  .grid-wrap{padding:28px 32px 60px;}
+  .grid-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .grid-meta .count{font-size:13px;color:var(--muted);}
+  .grid-meta select{background:var(--ink-2);border:1px solid var(--line);color:var(--paper);padding:7px 10px;border-radius:6px;font-size:12px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px;}
+
+  .card{
+    background:var(--paper);color:var(--text-on-paper);border-radius:4px;overflow:hidden;position:relative;
+    box-shadow:0 10px 24px rgba(0,0,0,0.28);transition:transform .18s ease;
+  }
+  .card:hover{transform:translateY(-3px);}
+  .card-img{
+    height:150px;position:relative;display:flex;align-items:flex-end;padding:12px;
+    background:linear-gradient(135deg,var(--c1),var(--c2));overflow:hidden;
+  }
+  .card-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+  .card-img::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(23,27,38,0.65),rgba(23,27,38,0.05) 55%);z-index:1;}
+  .card-img > .punch,.card-img > .type-badge,.card-img > .fav-btn,.card-img > .price-tag{position:absolute;z-index:2;}
+  .punch{top:10px;left:10px;width:14px;height:14px;border-radius:50%;background:var(--ink);box-shadow:inset 0 0 0 2px rgba(255,255,255,0.15);}
+  .type-badge{background:rgba(23,27,38,0.55);color:#fff;font-size:11px;padding:4px 9px;border-radius:4px;letter-spacing:0.03em;backdrop-filter:blur(2px);}
+  .price-tag{
+    position:absolute;top:12px;right:-1px;background:var(--brass);color:var(--ink);
+    padding:6px 12px 6px 14px;border-radius:5px 0 0 5px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;
+    box-shadow:-3px 3px 0 rgba(0,0,0,0.15);
+  }
+  .price-tag span{display:block;font-size:9px;font-weight:400;opacity:0.75;font-family:'Inter',sans-serif;}
+  .fav-btn{
+    position:absolute;bottom:10px;right:10px;width:32px;height:32px;border-radius:50%;
+    background:rgba(23,27,38,0.55);border:none;display:flex;align-items:center;justify-content:center;
+    backdrop-filter:blur(2px);transition:background .15s;
+  }
+  .fav-btn svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;}
+  .fav-btn.active svg{fill:var(--rose);stroke:var(--rose);}
+  .fav-btn:hover{background:rgba(23,27,38,0.8);}
+
+  .card-body{padding:14px 16px 16px;}
+  .perf{border-top:1px dashed var(--line-paper);margin:0 -16px 12px;}
+  .card-title{font-family:'Fraunces',serif;font-size:17px;margin:0 0 4px;line-height:1.25;}
+  .card-loc{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted-dark);margin-bottom:12px;}
+  .card-loc svg{width:12px;height:12px;stroke:var(--brass-dim);fill:none;stroke-width:2;flex-shrink:0;}
+  .specs{display:flex;gap:14px;margin-bottom:14px;}
+  .spec{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-on-paper);}
+  .spec svg{width:14px;height:14px;stroke:var(--muted-dark);fill:none;stroke-width:1.8;}
+  .card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .avail{font-size:11px;color:var(--sage);font-weight:600;}
+  .contact-btn{
+    background:var(--ink);color:var(--paper);border:none;padding:8px 14px;border-radius:5px;font-size:12px;font-weight:500;
+    display:flex;align-items:center;gap:6px;transition:background .15s;
+  }
+  .contact-btn:hover{background:var(--brass-dim);}
+  .contact-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+
+  .empty{padding:70px 20px;text-align:center;color:var(--muted);}
+  .empty svg{width:36px;height:36px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:14px;}
+  .empty h3{color:var(--paper);font-weight:400;margin-bottom:6px;}
+
+  /* ===== ADMIN ===== */
+  .admin-wrap{padding:28px 32px 60px;max-width:1400px;margin:0 auto;}
+  .admin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .admin-head h2{font-size:22px;font-weight:400;margin:0;}
+  .admin-head p{color:var(--muted);font-size:13px;margin:4px 0 0;}
+  .add-btn{
+    background:var(--sage);color:#fff;border:none;padding:10px 18px;border-radius:6px;font-size:13px;font-weight:500;
+    display:flex;align-items:center;gap:7px;
+  }
+  .add-btn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.4;}
+
+  .ledger{width:100%;border-collapse:collapse;background:var(--ink-2);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .ledger thead th{
+    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);
+    padding:13px 16px;border-bottom:1px solid var(--line);font-weight:600;
+  }
+  .ledger tbody td{padding:14px 16px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle;}
+  .ledger tbody tr:last-child td{border-bottom:none;}
+  .ledger tbody tr:hover{background:var(--ink-3);}
+  .l-title{font-family:'Fraunces',serif;font-size:15px;}
+  .l-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .type-pill{font-size:11px;padding:3px 9px;border-radius:4px;background:var(--ink-3);color:var(--paper);border:1px solid var(--line);}
+  .rent-cell{font-family:'IBM Plex Mono',monospace;color:var(--brass);}
+  .row-actions{display:flex;gap:6px;}
+  .icon-btn{width:30px;height:30px;border-radius:5px;border:1px solid var(--line);background:var(--ink);display:flex;align-items:center;justify-content:center;}
+  .icon-btn svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2;}
+  .icon-btn:hover svg{stroke:var(--paper);}
+  .icon-btn.danger:hover{background:rgba(178,75,54,0.15);border-color:var(--rose);}
+  .icon-btn.danger:hover svg{stroke:var(--rose);}
+
+  /* ===== MODALS / DRAWER ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(10,12,18,0.6);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .modal{background:var(--ink-2);border:1px solid var(--line);border-radius:10px;max-width:420px;width:100%;padding:26px;position:relative;}
+  .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;}
+  .modal-close svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;}
+  .modal h3{font-size:20px;font-weight:400;margin:0 0 4px;}
+  .modal .sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+  .owner-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--ink);border-radius:8px;margin-bottom:16px;}
+  .owner-avatar{width:40px;height:40px;border-radius:50%;background:var(--brass);color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;}
+  .owner-name{font-size:14px;font-weight:600;}
+  .owner-detail{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:2px;}
+  .owner-detail svg{width:11px;height:11px;stroke:var(--brass);fill:none;stroke-width:2;}
+  .modal textarea{
+    width:100%;background:var(--ink);border:1px solid var(--line);color:var(--paper);border-radius:6px;
+    padding:10px 12px;font-family:inherit;font-size:13px;resize:vertical;min-height:80px;margin-bottom:14px;
+  }
+  .send-btn{width:100%;background:var(--brass);color:var(--ink);border:none;padding:11px;border-radius:6px;font-weight:600;font-size:13px;}
+  .send-btn:hover{background:#d3ab5c;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--sage);color:#fff;padding:12px 22px;border-radius:8px;font-size:13px;z-index:200;transition:all .25s;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .drawer-overlay{position:fixed;inset:0;background:rgba(10,12,18,0.55);display:none;z-index:110;}
+  .drawer-overlay.show{display:block;}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:420px;max-width:92vw;background:var(--ink-2);border-left:1px solid var(--line);
+    z-index:111;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto;padding:26px;
+  }
+  .drawer.show{transform:translateX(0);}
+  .drawer h3{font-size:20px;font-weight:400;margin:0 0 20px;}
+  .drawer-section{margin-bottom:22px;}
+  .drawer-section .sec-label{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--brass);font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+  .drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .drawer-grid .full{grid-column:1/-1;}
+  .dfield label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;}
+  .dfield input,.dfield select,.dfield textarea{
+    width:100%;background:var(--ink);border:1px solid var(--line);color:var(--paper);border-radius:6px;padding:9px 10px;font-size:13px;font-family:inherit;
+  }
+  .drawer-actions{display:flex;gap:10px;margin-top:6px;}
+  .btn-primary{flex:1;background:var(--brass);color:var(--ink);border:none;padding:11px;border-radius:6px;font-weight:600;font-size:13px;}
+  .btn-ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:11px 16px;border-radius:6px;font-size:13px;}
+
+  .foot{padding:26px 32px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;text-align:center;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand">
+    <span class="brand-mark">NIVASA<span class="brand-dot">.</span></span>
+    <span class="brand-tag">— find your next address</span>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-view="browse">Browse</button>
+    <button class="tab" data-view="favorites">Favourites</button>
+    <button class="tab" data-view="admin">Admin Panel</button>
+  </div>
+  <div class="nav-right">
+    <div class="fav-count">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#B24B36;fill:#B24B36;stroke-width:2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      <span id="favCountLabel">0 saved</span>
+    </div>
+  </div>
+</nav>
+
+<div id="browseView">
+  <div class="hero">
+    <div>
+      <h1>Flats, bungalows &amp; houses — <em>picked for renting.</em></h1>
+      <p>Filter by type, city and budget, then message the owner directly. No brokers in the middle.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="n mono" id="statTotal">0</div><div class="l">LISTINGS</div></div>
+      <div class="hstat"><div class="n mono" id="statCities">0</div><div class="l">CITIES</div></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="rail">
+      <h3>Filters</h3>
+      <div class="field">
+        <label>Search</label>
+        <input type="text" id="fSearch" placeholder="Locality, title...">
+      </div>
+      <div class="field">
+        <label>Property type</label>
+        <div class="chip-row" id="fType">
+          <button class="chip active" data-val="All">All</button>
+          <button class="chip" data-val="Flat">Flat</button>
+          <button class="chip" data-val="Bungalow">Bungalow</button>
+          <button class="chip" data-val="House">House</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>City</label>
+        <select id="fCity"></select>
+      </div>
+      <div class="field">
+        <label>Bedrooms</label>
+        <div class="chip-row" id="fBeds">
+          <button class="chip active" data-val="0">Any</button>
+          <button class="chip" data-val="1">1</button>
+          <button class="chip" data-val="2">2</button>
+          <button class="chip" data-val="3">3</button>
+          <button class="chip" data-val="4">4+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Max monthly rent — <span id="rentVal" class="mono">₹1,00,000</span></label>
+        <input type="range" id="fRent" min="8000" max="100000" step="1000" value="100000" style="width:100%;accent-color:#C29A4B;">
+      </div>
+      <button class="reset-link" id="fReset">Reset all filters</button>
+    </aside>
+
+    <div class="grid-wrap">
+      <div class="grid-meta">
+        <span class="count" id="resultCount">0 properties</span>
+        <select id="fSort">
+          <option value="default">Sort: Newest</option>
+          <option value="low">Sort: Rent — low to high</option>
+          <option value="high">Sort: Rent — high to low</option>
+        </select>
+      </div>
+      <div class="grid" id="cardGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div id="favoritesView" style="display:none;">
+  <div class="hero">
+    <div>
+      <h1>Your <em>shortlist.</em></h1>
+      <p>Properties you've saved for a closer look.</p>
+    </div>
+  </div>
+  <div class="grid-wrap">
+    <div class="grid" id="favGrid"></div>
+  </div>
+</div>
+
+<div id="adminView" style="display:none;">
+  <div class="admin-wrap">
+    <div class="admin-head">
+      <div>
+        <h2>Admin Panel</h2>
+        <p>Manage housing details and rental terms for every listing.</p>
+      </div>
+      <button class="add-btn" id="addPropertyBtn">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Add property
+      </button>
+    </div>
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Property</th><th>Type</th><th>City</th><th>Monthly rent</th><th>Deposit</th><th>Beds / Baths</th><th>Availability</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="adminBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="foot">NIVASA — demo frontend, all listings are sample data.</div>
+
+<!-- Contact modal -->
+<div class="overlay" id="contactOverlay">
+  <div class="modal">
+    <button class="modal-close" id="contactClose"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h3>Contact owner</h3>
+    <div class="sub" id="contactPropTitle"></div>
+    <div class="owner-row">
+      <div class="owner-avatar" id="ownerInitial"></div>
+      <div>
+        <div class="owner-name" id="ownerName"></div>
+        <div class="owner-detail"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .6 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c1 .3 2 .5 3 .6a2 2 0 0 1 1.7 2z"/></svg><span id="ownerPhone"></span></div>
+        <div class="owner-detail"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m4 6 8 6 8-6"/></svg><span id="ownerEmail"></span></div>
+      </div>
+    </div>
+    <textarea id="contactMsg" placeholder="Hi, I'm interested in this property. Is it still available?"></textarea>
+    <button class="send-btn" id="sendMsgBtn">Send message</button>
+  </div>
+</div>
+
+<!-- Admin edit drawer -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <h3 id="drawerTitle">Edit property</h3>
+  <div class="drawer-section">
+    <div class="sec-label">Housing details</div>
+    <div class="drawer-grid">
+      <div class="dfield full"><label>Title</label><input id="dTitle"></div>
+      <div class="dfield"><label>Type</label>
+        <select id="dType"><option>Flat</option><option>Bungalow</option><option>House</option></select>
+      </div>
+      <div class="dfield"><label>Furnishing</label>
+        <select id="dFurnish"><option>Unfurnished</option><option>Semi-furnished</option><option>Fully furnished</option></select>
+      </div>
+      <div class="dfield"><label>City</label><input id="dCity"></div>
+      <div class="dfield"><label>Locality</label><input id="dLocality"></div>
+      <div class="dfield"><label>Bedrooms</label><input id="dBeds" type="number" min="1"></div>
+      <div class="dfield"><label>Bathrooms</label><input id="dBaths" type="number" min="1"></div>
+      <div class="dfield full"><label>Area (sq.ft)</label><input id="dSqft" type="number" min="100"></div>
+    </div>
+  </div>
+  <div class="drawer-section">
+    <div class="sec-label">Rental details</div>
+    <div class="drawer-grid">
+      <div class="dfield"><label>Monthly rent (₹)</label><input id="dRent" type="number" min="0"></div>
+      <div class="dfield"><label>Deposit (₹)</label><input id="dDeposit" type="number" min="0"></div>
+      <div class="dfield"><label>Lease term</label><input id="dLease" placeholder="e.g. 11 months"></div>
+      <div class="dfield"><label>Availability</label><input id="dAvail" placeholder="e.g. Immediately"></div>
+    </div>
+  </div>
+  <div class="drawer-section">
+    <div class="sec-label">Owner &amp; description</div>
+    <div class="drawer-grid">
+      <div class="dfield"><label>Owner name</label><input id="dOwnerName"></div>
+      <div class="dfield"><label>Owner phone</label><input id="dOwnerPhone"></div>
+      <div class="dfield full"><label>Owner email</label><input id="dOwnerEmail"></div>
+      <div class="dfield full"><label>Description</label><textarea id="dDesc" rows="3"></textarea></div>
+    </div>
+  </div>
+  <div class="drawer-actions">
+    <button class="btn-ghost" id="drawerCancel">Cancel</button>
+    <button class="btn-primary" id="drawerSave">Save property</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  const rupee = n => '₹' + Number(n).toLocaleString('en-IN');
+  const gradients = [
+    ['#3F6B5C', '#171B26'], ['#C29A4B', '#171B26'], ['#4C5B7A', '#171B26'],
+    ['#8E7134', '#20263A'], ['#3F6B5C', '#20263A'], ['#B24B36', '#171B26'],
+    ['#4C7A67', '#272E45'], ['#C29A4B', '#272E45'], ['#5B6478', '#171B26']
+  ];
+
+  let properties = [];
+  let favorites = new Set();
+  let filters = { search: "", type: "All", city: "All", beds: 0, rent: 100000, sort: "default" };
+  let view = "browse";
+  let editingId = null;
+  let contactPropertyId = null;
+
+  async function loadProperties() {
+    try {
+      const response = await fetch("http://localhost:5000/api/properties");
+      const data = await response.json();
+      properties = data.map((p, index) => ({
+        ...p,
+        displayId: index + 1,
+        id: p._id
+      }));
+      renderAll();
+    } catch (err) {
+      console.error("Failed to load properties:", err);
+    }
+  }
+
+  // ---------- Icons ----------
+  function iconMapPin() { return `<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`; }
+  function iconBed() { return `<svg viewBox="0 0 24 24"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M2 14h20"/><path d="M6 10V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/></svg>`; }
+  function iconBath() { return `<svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M4 12V6a2 2 0 0 1 2-2h1"/><path d="M2 12h20"/></svg>`; }
+  function iconRuler() { return `<svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 8v3M11 8v3M15 8v3"/></svg>`; }
+  function iconHeart() { return `<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`; }
+  function iconMail() { return `<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m4 6 8 6 8-6"/></svg>`; }
+
+  const propertyPhotos = {
+    Flat: [
+      "https://burst.shopifycdn.com/photos/the-side-of-a-yellow-buildings-with-balconies-and-windows.jpg?width=800&format=pjpg&exif=0&iptc=0",
+      "https://burst.shopifycdn.com/photos/side-of-a-building-with-large-windows-and-small-balconies.jpg?width=800&format=pjpg&exif=0&iptc=0"
+    ],
+    Bungalow: [
+      "https://burst.shopifycdn.com/photos/bungalow-house-exterior.jpg?width=800&format=pjpg&exif=0&iptc=0",
+      "https://burst.shopifycdn.com/photos/pink-building-with-a-black-roof-and-a-flag-pole.jpg?width=800&format=pjpg&exif=0&iptc=0"
+    ],
+    House: [
+      "https://burst.shopifycdn.com/photos/modern-house.jpg?width=800&format=pjpg&exif=0&iptc=0",
+      "https://burst.shopifycdn.com/photos/a-beige-house-with-a-grey-roof-and-large-trees.jpg?width=800&format=pjpg&exif=0&iptc=0"
+    ]
+  };
+
+  function photoFor(p) {
+    const arr = propertyPhotos[p.type] || propertyPhotos.House;
+    return arr[(p.displayId - 1) % arr.length];
+  }
+
+  function cityList() {
+    return [...new Set(properties.map(p => p.city))].sort();
+  }
+
+  function populateCitySelect() {
+    const sel = document.getElementById('fCity');
+    sel.innerHTML = '<option value="All">All cities</option>' + cityList().map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  function applyFilters(list) {
+    return list.filter(p => {
+      if (filters.type !== "All" && p.type !== filters.type) return false;
+      if (filters.city !== "All" && p.city !== filters.city) return false;
+      if (filters.beds > 0) {
+        if (filters.beds === 4 ? p.bedrooms < 4 : p.bedrooms !== filters.beds) return false;
+      }
+      if (p.rent > filters.rent) return false;
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        if (!(p.title.toLowerCase().includes(q) || p.locality.toLowerCase().includes(q) || p.city.toLowerCase().includes(q))) return false;
+      }
+      return true;
+    });
+  }
+
+  function sortList(list) {
+    const l = [...list];
+    if (filters.sort === "low") l.sort((a, b) => a.rent - b.rent);
+    else if (filters.sort === "high") l.sort((a, b) => b.rent - a.rent);
+    else l.sort((a, b) => b.displayId - a.displayId);
+    return l;
+  }
+
+  function cardHtml(p) {
+    const [c1, c2] = gradients[(p.displayId - 1) % gradients.length];
+    const isFav = favorites.has(p.displayId);
+    return `
+    <div class="card" data-id="${p.displayId}">
+      <div class="card-img" style="--c1:${c1};--c2:${c2}">
+        <img class="card-photo" src="${photoFor(p)}" alt="${p.title}" loading="lazy" onerror="this.remove()">
+        <div class="punch"></div>
+        <span class="type-badge">${p.type} · ${p.furnishing}</span>
+        <button class="fav-btn ${isFav ? 'active' : ''}" data-fav="${p.displayId}">${iconHeart()}</button>
+        <div class="price-tag">${rupee(p.rent)}<span>/ month</span></div>
+      </div>
+      <div class="card-body">
+        <div class="perf"></div>
+        <h3 class="card-title">${p.title}</h3>
+        <div class="card-loc">${iconMapPin()}<span>${p.locality}, ${p.city}</span></div>
+        <div class="specs">
+          <div class="spec">${iconBed()}<span>${p.bedrooms} Bed</span></div>
+          <div class="spec">${iconBath()}<span>${p.bathrooms} Bath</span></div>
+          <div class="spec">${iconRuler()}<span>${p.sqft} sqft</span></div>
+        </div>
+        <div class="card-foot">
+          <span class="avail">${p.availability}</span>
+          <button class="contact-btn" data-contact="${p.displayId}">${iconMail()} Contact owner</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function emptyHtml(msg) {
+    return `<div class="empty" style="grid-column:1/-1">${iconRuler()}<h3>No properties found</h3><p>${msg}</p></div>`;
+  }
+
+  function renderBrowse() {
+    populateCitySelect();
+    document.getElementById('fCity').value = filters.city;
+    const filtered = sortList(applyFilters(properties));
+    document.getElementById('cardGrid').innerHTML = filtered.length ? filtered.map(cardHtml).join('') : emptyHtml("Try widening your filters or resetting them.");
+    document.getElementById('resultCount').textContent = `${filtered.length} propert${filtered.length === 1 ? 'y' : 'ies'}`;
+    document.getElementById('statTotal').textContent = properties.length;
+    document.getElementById('statCities').textContent = cityList().length;
+  }
+
+  function renderFavorites() {
+    const list = properties.filter(p => favorites.has(p.displayId));
+    document.getElementById('favGrid').innerHTML = list.length ? list.map(cardHtml).join('') : emptyHtml("Tap the heart on any listing to save it here.");
+  }
+
+  function renderAdmin() {
+    document.getElementById('adminBody').innerHTML = properties.map(p => `
+      <tr>
+        <td>
+          <div class="l-title">${p.title}</div>
+          <div class="l-sub">${p.sqft} sqft · ${p.bedrooms}BHK · ${p.furnishing}</div>
+        </td>
+        <td><span class="type-pill">${p.type}</span></td>
+        <td>${p.city}</td>
+        <td class="mono rent-cell">${rupee(p.rent)}</td>
+        <td class="mono">${rupee(p.deposit)}</td>
+        <td>${p.bedrooms} / ${p.bathrooms}</td>
+        <td>${p.availability}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" data-edit="${p.displayId}" title="Edit"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            <button class="icon-btn danger" data-delete="${p.displayId}" title="Delete"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  function renderFavCount() {
+    document.getElementById('favCountLabel').textContent = `${favorites.size} saved`;
+  }
+
+  function renderAll() {
+    renderBrowse();
+    renderFavorites();
+    renderAdmin();
+    renderFavCount();
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // ---------- View Switching ----------
+  document.getElementById('tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    view = btn.dataset.view;
+    document.getElementById('browseView').style.display = view === 'browse' ? '' : 'none';
+    document.getElementById('favoritesView').style.display = view === 'favorites' ? '' : 'none';
+    document.getElementById('adminView').style.display = view === 'admin' ? '' : 'none';
+  });
+
+  // ---------- Filter Event Listeners ----------
+  document.getElementById('fSearch').addEventListener('input', e => { filters.search = e.target.value; renderBrowse(); });
+
+  document.getElementById('fType').addEventListener('click', e => {
+    const chip = e.target.closest('.chip'); if (!chip) return;
+    [...chip.parentNode.children].forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    filters.type = chip.dataset.val;
+    renderBrowse();
+  });
+
+  document.getElementById('fBeds').addEventListener('click', e => {
+    const chip = e.target.closest('.chip'); if (!chip) return;
+    [...chip.parentNode.children].forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    filters.beds = Number(chip.dataset.val);
+    renderBrowse();
+  });
+
+  document.getElementById('fCity').addEventListener('change', e => { filters.city = e.target.value; renderBrowse(); });
+
+  document.getElementById('fRent').addEventListener('input', e => {
+    filters.rent = Number(e.target.value);
+    document.getElementById('rentVal').textContent = rupee(filters.rent);
+    renderBrowse();
+  });
+
+  document.getElementById('fSort').addEventListener('change', e => { filters.sort = e.target.value; renderBrowse(); });
+
+  document.getElementById('fReset').addEventListener('click', () => {
+    filters = { search: "", type: "All", city: "All", beds: 0, rent: 100000, sort: "default" };
+    document.getElementById('fSearch').value = "";
+    document.getElementById('fRent').value = 100000;
+    document.getElementById('rentVal').textContent = rupee(100000);
+    document.getElementById('fSort').value = "default";
+    document.querySelectorAll('#fType .chip').forEach((c, i) => c.classList.toggle('active', i === 0));
+    document.querySelectorAll('#fBeds .chip').forEach((c, i) => c.classList.toggle('active', i === 0));
+    renderBrowse();
+  });
+
+  // ---------- Grid Actions (Favorites & Contact Modal) ----------
+  function handleCardClick(e) {
+    const favBtn = e.target.closest('[data-fav]');
+    if (favBtn) {
+      const id = Number(favBtn.dataset.fav);
+      if (favorites.has(id)) favorites.delete(id);
+      else favorites.add(id);
+      renderAll();
+      return;
+    }
+
+    const contactBtn = e.target.closest('[data-contact]');
+    if (contactBtn) {
+      contactPropertyId = Number(contactBtn.dataset.contact);
+      const p = properties.find(item => item.displayId === contactPropertyId);
+      if (!p) return;
+      document.getElementById('contactPropTitle').textContent = `${p.title} (${p.locality}, ${p.city})`;
+      document.getElementById('ownerName').textContent = p.ownerName || "Property Owner";
+      document.getElementById('ownerPhone').textContent = p.ownerPhone || "N/A";
+      document.getElementById('ownerEmail').textContent = p.ownerEmail || "N/A";
+      document.getElementById('ownerInitial').textContent = (p.ownerName || "O").charAt(0).toUpperCase();
+      document.getElementById('contactOverlay').classList.add('show');
+    }
+  }
+
+  document.getElementById('cardGrid').addEventListener('click', handleCardClick);
+  document.getElementById('favGrid').addEventListener('click', handleCardClick);
+
+  document.getElementById('contactClose').addEventListener('click', () => {
+    document.getElementById('contactOverlay').classList.remove('show');
+  });
+
+  // Contact message submit handler
+  document.getElementById("sendMsgBtn").addEventListener("click", async () => {
+    const property = properties.find(p => p.displayId === contactPropertyId);
+    const message = document.getElementById("contactMsg").value;
+
+    if (!message.trim()) {
+      alert("Please enter a message");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/properties/${property.id}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          senderName: "Guest User",
+          senderEmail: "guest@gmail.com",
+          message: message
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById("contactOverlay").classList.remove("show");
+        document.getElementById("contactMsg").value = "";
+        showToast("Message Sent");
+      } else {
+        alert(data.message || "Failed to send message.");
+      }
+    } catch (err) {
+      console.error("Contact error:", err);
+      alert("Unable to reach the server.");
+    }
+  });
+
+  // ---------- Admin Actions (Drawer & Delete) ----------
+  function openDrawer(p = null) {
+    editingId = p ? p.displayId : null;
+    document.getElementById('drawerTitle').textContent = p ? 'Edit Property' : 'Add Property';
+
+    document.getElementById('dTitle').value = p ? p.title : '';
+    document.getElementById('dType').value = p ? p.type : 'Flat';
+    document.getElementById('dFurnish').value = p ? p.furnishing : 'Semi-furnished';
+    document.getElementById('dCity').value = p ? p.city : '';
+    document.getElementById('dLocality').value = p ? p.locality : '';
+    document.getElementById('dBeds').value = p ? p.bedrooms : 1;
+    document.getElementById('dBaths').value = p ? p.bathrooms : 1;
+    document.getElementById('dSqft').value = p ? p.sqft : 1000;
+    document.getElementById('dRent').value = p ? p.rent : 25000;
+    document.getElementById('dDeposit').value = p ? p.deposit : 50000;
+    document.getElementById('dLease').value = p ? (p.leaseTerm || '11 months') : '11 months';
+    document.getElementById('dAvail').value = p ? p.availability : 'Immediately';
+    document.getElementById('dOwnerName').value = p ? (p.ownerName || '') : '';
+    document.getElementById('dOwnerPhone').value = p ? (p.ownerPhone || '') : '';
+    document.getElementById('dOwnerEmail').value = p ? (p.ownerEmail || '') : '';
+    document.getElementById('dDesc').value = p ? (p.description || '') : '';
+
+    document.getElementById('drawerOverlay').classList.add('show');
+    document.getElementById('drawer').classList.add('show');
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawerOverlay').classList.remove('show');
+    document.getElementById('drawer').classList.remove('show');
+  }
+
+  document.getElementById('addPropertyBtn').addEventListener('click', () => openDrawer());
+  document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+  document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+
+  document.getElementById('drawerSave').addEventListener('click', async () => {
+    const payload = {
+      title: document.getElementById('dTitle').value.trim(),
+      type: document.getElementById('dType').value,
+      furnishing: document.getElementById('dFurnish').value,
+      city: document.getElementById('dCity').value.trim(),
+      locality: document.getElementById('dLocality').value.trim(),
+      bedrooms: Number(document.getElementById('dBeds').value),
+      bathrooms: Number(document.getElementById('dBaths').value),
+      sqft: Number(document.getElementById('dSqft').value),
+      rent: Number(document.getElementById('dRent').value),
+      deposit: Number(document.getElementById('dDeposit').value),
+      leaseTerm: document.getElementById('dLease').value.trim(),
+      availability: document.getElementById('dAvail').value.trim(),
+      ownerName: document.getElementById('dOwnerName').value.trim(),
+      ownerPhone: document.getElementById('dOwnerPhone').value.trim(),
+      ownerEmail: document.getElementById('dOwnerEmail').value.trim(),
+      description: document.getElementById('dDesc').value.trim()
+    };
+
+    if (!payload.title || !payload.city || !payload.locality) {
+      alert("Please fill in the required fields (Title, City, Locality)");
+      return;
+    }
+
+    try {
+      if (editingId) {
+        const prop = properties.find(p => p.displayId === editingId);
+        const res = await fetch(`http://localhost:5000/api/properties/${prop.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) showToast("Property Updated");
+      } else {
+        const res = await fetch(`http://localhost:5000/api/properties`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) showToast("Property Added");
+      }
+      closeDrawer();
+      await loadProperties();
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Error saving property details.");
+    }
+  });
+
+  document.getElementById('adminBody').addEventListener('click', async e => {
+    const editBtn = e.target.closest('[data-edit]');
+    if (editBtn) {
+      const id = Number(editBtn.dataset.edit);
+      const p = properties.find(item => item.displayId === id);
+      if (p) openDrawer(p);
+      return;
+    }
+
+    const delBtn = e.target.closest('[data-delete]');
+    if (delBtn) {
+      const id = Number(delBtn.dataset.delete);
+      const p = properties.find(item => item.displayId === id);
+      if (p && confirm(`Are you sure you want to delete "${p.title}"?`)) {
+        try {
+          const res = await fetch(`http://localhost:5000/api/properties/${p.id}`, { method: "DELETE" });
+          if (res.ok) {
+            favorites.delete(id);
+            showToast("Property Removed");
+            await loadProperties();
+          }
+        } catch (err) {
+          console.error("Delete failed:", err);
+        }
+      }
+    }
+  });
+
+  // Initial fetch
+  loadProperties();
+})();
+</script>
+</body>
+</html>
